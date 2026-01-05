@@ -16,7 +16,7 @@ body {
   display: flex;
   gap: 32px;
   align-items: flex-start;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -104,11 +104,17 @@ body {
 }
 
 .canvas-wrap {
+  display: flex;
+  gap: 24px;
   padding: 12px;
+
   border-radius: 12px;
   background: #ffffff;
   border: 1px solid #e5e5e5;
+
+  align-items: center;
 }
+
 
 canvas {
   display: block;

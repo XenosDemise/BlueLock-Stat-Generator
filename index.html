@@ -11,6 +11,11 @@
   <div id="controls" class="controls">
     <h2>Stats Controller</h2>
 
+    <div class="control name-control" style="display:flex;gap:8px;align-items:center;">
+      <label for="playerName" style="width:64px;">Name</label>
+      <input id="playerName" type="text" placeholder="Player name" value="XXXX" style="flex:1;padding:6px;">
+    </div>
+
     <div class="control" data-key="SPEED">
       <label>SPEED</label>
       <input type="range" min="0" max="100" value="70">
@@ -51,7 +56,8 @@
   </div>
 
   <div class="canvas-wrap">
-    <canvas id="canvas" width="750" height="750"></canvas>
+    <canvas id="profile" width="190" height="750"></canvas>
+    <canvas id="radar" width="750" height="750"></canvas>
   </div>
 
   <div class="last-updated">
@@ -65,7 +71,8 @@
   </div>
 </div>
 
+<script src="profile.js"></script>
+<script src="radar.js"></script>
 
-<script src="script.js"></script>
 </body>
 </html>

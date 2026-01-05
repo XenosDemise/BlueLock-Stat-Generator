@@ -1,4 +1,4 @@
-const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("radar");
 const ctx = canvas.getContext("2d");
 
 const dpr = window.devicePixelRatio || 1;
@@ -75,7 +75,7 @@ function drawCircle(center, radius, fill = null, stroke = BLACK, lineWidth = 1) 
 
 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-const Stats = {
+window.Stats = {
   SPEED: 75,
   DEFENSE: 72,
   PASS: 69,
@@ -84,7 +84,7 @@ const Stats = {
   OFFENSE: 87
 };
 
-const StatsTR = {
+window.StatsTR = {
   SPEED: "速さ",
   DEFENSE: "守備力",
   PASS: "パス",
@@ -231,8 +231,8 @@ function render() {
     ctx.fillStyle = BLACK;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.strokeText(keys[i], lx, ly);
-    ctx.fillText(keys[i], lx, ly);
+    ctx.strokeText(keys[i], lx, ly + outward * 0.3);
+    ctx.fillText(keys[i], lx, ly + outward * 0.3);
 
     ctx.font = "23px Hiragino Sans";
     ctx.strokeStyle = WHITE;
@@ -254,32 +254,78 @@ function render() {
   }
 }
 
-document.querySelectorAll(".control").forEach(control => {
+window._statsTouched = false;
+
+function computeAverage(stats) {
+  const vals = Object.values(stats || {});
+  if (!vals.length) return 0;
+  const sum = vals.reduce((a, b) => a + (Number(b) || 0), 0);
+  return Math.round(sum / vals.length);
+}
+
+document.querySelectorAll(".control[data-key]").forEach(control => {
   const key = control.dataset.key;
   const input = control.querySelector("input");
   const value = control.querySelector(".value");
 
+  if (!key || !input) return;
+
   Stats[key] = parseInt(input.value, 10) || 0;
-  value.textContent = input.value;
+  if (value) value.textContent = input.value;
 
   input.addEventListener("input", () => {
     const v = parseInt(input.value, 10) || 0;
     Stats[key] = v;
-    value.textContent = v;
+    if (value) value.textContent = v;
+
+    window._statsTouched = true;
+
+    window.StatsAverage = computeAverage(Stats);
+
+    if (typeof window.renderProfile === "function") {
+      window.renderProfile();
+    }
+
     render();
-  });
+  }, { passive: true });
 });
 
 render();
 
 document.getElementById("download").addEventListener("click", () => {
-  const dataURL = canvas.toDataURL("image/png");
+  const profileCanvas = document.getElementById("profile");
+  const radarCanvasLocal = document.getElementById("radar");
 
-  const link = document.createElement("a");
-  link.href = dataURL;
-  link.download = "Stats.png";
+  const canvases = [profileCanvas, radarCanvasLocal].filter(Boolean);
+  if (canvases.length === 0) return;
 
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  Promise.all(canvases.map(c => new Promise((res) => {
+    const img = new Image();
+    img.onload = () => res(img);
+    img.src = c.toDataURL("image/png");
+  }))).then(images => {
+    const totalWidth = images.reduce((sum, img) => sum + img.width, 0);
+    const maxHeight = Math.max(...images.map(img => img.height));
+
+    const out = document.createElement("canvas");
+    out.width = totalWidth;
+    out.height = maxHeight;
+    const octx = out.getContext("2d");
+
+    octx.fillStyle = "#ffffff";
+    octx.fillRect(0, 0, out.width, out.height);
+
+    let x = 0;
+    images.forEach(img => {
+      octx.drawImage(img, x, 0);
+      x += img.width;
+    });
+
+    const link = document.createElement("a");
+    link.href = out.toDataURL("image/png");
+    link.download = "Stats.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
 });
