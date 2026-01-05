@@ -114,3 +114,23 @@ canvas {
   display: block;
   background: #ffffff;
 }
+
+.last-updated {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  font-size: 1rem;
+  color: rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  text-align: right;
+}
+
+.Contact {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  font-size: 1rem;
+  color: rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  text-align: left;
+}
