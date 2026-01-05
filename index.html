@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>BlueLock Stats Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="controls" class="controls">
+    <h2>Stats Controller</h2>
+
+    <div class="control" data-key="SPEED">
+      <label>SPEED</label>
+      <input type="range" min="0" max="100" value="70">
+      <span class="value">70</span>
+    </div>
+
+    <div class="control" data-key="DEFENSE">
+      <label>DEFENSE</label>
+      <input type="range" min="0" max="100" value="70">
+      <span class="value">70</span>
+    </div>
+
+    <div class="control" data-key="PASS">
+      <label>PASS</label>
+      <input type="range" min="0" max="100" value="70">
+      <span class="value">70</span>
+    </div>
+
+    <div class="control" data-key="DRIBBLE">
+      <label>DRIBBLE</label>
+      <input type="range" min="0" max="100" value="70">
+      <span class="value">70</span>
+    </div>
+
+    <div class="control" data-key="SHOOT">
+      <label>SHOOT</label>
+      <input type="range" min="0" max="100" value="70">
+      <span class="value">70</span>
+    </div>
+
+    <div class="control" data-key="OFFENSE">
+      <label>OFFENSE</label>
+      <input type="range" min="0" max="100" value="70">
+      <span class="value">70</span>
+    </div>
+
+    <button id="download">Download Image</button>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvas" width="750" height="750"></canvas>
+  </div>
+</div>
+
+
+<script src="script.js"></script>
+</body>
+</html>
