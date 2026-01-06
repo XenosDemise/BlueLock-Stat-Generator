@@ -11,6 +11,12 @@
   <div id="controls" class="controls">
     <h2>Stats Controller</h2>
 
+    <div class="control preset-control" style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+      <label for="presetSelect" style="width:64px;">Preset</label>
+      <select id="presetSelect" style="flex:1;padding:6px;"></select>
+      <button id="loadPresetBtn" style="padding:6px 8px;margin-left:6px;">Load</button>
+    </div>
+
     <div class="control name-control" style="display:flex;gap:8px;align-items:center;">
       <label for="playerName" style="width:64px;">Name</label>
       <input id="playerName" type="text" placeholder="Player name" value="XXXX" style="flex:1;padding:6px;">
@@ -71,8 +77,10 @@
   </div>
 </div>
 
+<script src="presets.js"></script>
 <script src="profile.js"></script>
 <script src="radar.js"></script>
+<script src="init-presets.js"></script>
 
 </body>
 </html>

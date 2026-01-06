@@ -87,7 +87,7 @@
     return points;
   }
 
-  function drawPolygon(points, fill = WHITE, stroke = BLACK, lineWidth = 2) {
+  function drawPolygon(points, fill = null, stroke = BLACK, lineWidth = 2) {
     profileCtx.beginPath();
     profileCtx.moveTo(points[0][0], points[0][1]);
 
@@ -96,12 +96,71 @@
     }
 
     profileCtx.closePath();
-    profileCtx.fillStyle = fill;
+
+    if (fill !== null) {
+      profileCtx.fillStyle = fill;
+      profileCtx.fill();
+    }
+
     profileCtx.strokeStyle = stroke;
     profileCtx.lineWidth = lineWidth;
     profileCtx.lineJoin = "round";
-    profileCtx.fill();
     profileCtx.stroke();
+  }
+
+  function drawImageInPolygon(img, points, options = {}) {
+    const {
+      padding = 0,
+      scale = 1.0
+    } = options;
+
+    if (!img || !img.complete) return;
+
+    let minX = Infinity, minY = Infinity;
+    let maxX = -Infinity, maxY = -Infinity;
+
+    points.forEach(([x, y]) => {
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+    });
+
+    const boxW = maxX - minX;
+    const boxH = maxY - minY;
+
+    const imgRatio = img.width / img.height;
+    const boxRatio = boxW / boxH;
+
+    let drawW, drawH;
+
+    if (imgRatio > boxRatio) {
+      drawH = boxH * scale;
+      drawW = drawH * imgRatio;
+    } else {
+      drawW = boxW * scale;
+      drawH = drawW / imgRatio;
+    }
+
+    drawW -= padding * 2;
+    drawH -= padding * 2;
+
+    const x = minX + (boxW - drawW) / 2 + padding;
+    const y = minY + (boxH - drawH) / 2 + padding + 15;
+
+    profileCtx.save();
+
+    profileCtx.beginPath();
+    points.forEach(([px, py], i) => {
+      if (i === 0) profileCtx.moveTo(px, py);
+      else profileCtx.lineTo(px, py);
+    });
+    profileCtx.closePath();
+    profileCtx.clip();
+
+    profileCtx.drawImage(img, x, y, drawW, drawH);
+
+    profileCtx.restore();
   }
 
   function sizeAndSetup() {
@@ -118,6 +177,23 @@
   }
   
   const nameInput = document.getElementById("playerName");
+
+  const iconImg = new Image();
+  let currentIconPath = "";
+
+  window.setIcon = function setIcon(path) {
+    if (!path || path === currentIconPath) return;
+
+    currentIconPath = path;
+    iconImg.src = path;
+
+    iconImg.onload = () => {
+      if (typeof window.renderProfile === "function") {
+        window.renderProfile();
+      }
+    };
+  };
+
 
   function render() {
     if (!profileCanvas) return;
@@ -143,12 +219,12 @@
 
     const name = rawName.length ? rawName : "";
 
-    const baseSize = 43;
+    const baseSize = 40;
     const maxChars = 4;
     const shrinkPerChar = 5;
 
     const extraChars = Math.max(0, name.length - maxChars);
-    const nameSize = Math.max(28, baseSize - extraChars * shrinkPerChar);
+    const nameSize = Math.max(23, baseSize - extraChars * shrinkPerChar*0.8);
 
     drawLine([cx,cy*1.05], [cx, cy*0.01], GREY, 2);
     const sf = 0.225;
@@ -165,9 +241,36 @@
       drawLine([cx*0.1,cy*(0.08+i*sf1)], [cx*1.9, cy*(0.08+i*sf1)], GREY, 2);
     }
 
-    drawPolygon(regularPolygon(cx, cy*0.34, 62, 5,-Math.PI / 2), WHITE, DARKGREY, 2);
+    const iconPentagon = regularPolygon(
+      cx,
+      cy * 0.34,
+      62,
+      5,
+      -Math.PI / 2
+    );
+
+    // Background + outline
+    drawPolygon(iconPentagon, WHITE, WHITE, 7);
+
+    // Image inside
+    drawImageInPolygon(iconImg, iconPentagon, {
+      scale: 0.75,
+      padding: 0
+    });
+
+    drawPolygon(iconPentagon, null, DARKGREY, 2);
+
+    // Tiny triangle thing
+    drawPolygon([[cx*1.84,cy*0.025],[cx*1.73,cy*0.025],[cx*1.84,cy*0.05]], BLACK, BLACK, 2);
+
+    // Overall grade stroke
+    drawPolygon([[cx*0.23, cy*1.02], [cx*1.77, cy*1.02], [cx*1.77, cy*0.551], [cx*1.4, cy*0.49], [cx*0.6, cy*0.49], [cx*0.23, cy*0.55]], WHITE, WHITE, 7);
+    // Overall grade outline
     drawPolygon([[cx*0.23, cy*1.02], [cx*1.77, cy*1.02], [cx*1.77, cy*0.551], [cx*1.4, cy*0.49], [cx*0.6, cy*0.49], [cx*0.23, cy*0.55]], WHITE, DARKGREY, 2);
 
+    drawLine([cx*0.29, cy*1.007], [cx*1.71, cy*1.007], GREY, 2)
+    drawLine([cx*0.25, cy*0.995], [cx*0.29, cy*1.007], GREY, 2)
+    drawLine([cx*1.75, cy*0.995], [cx*1.71, cy*1.007], GREY, 2)
 
     drawTextWithStroke(String(name), cx, cy * 0.12, {
       font: `bold ${nameSize}px "Arial Black", Arial`,
@@ -178,7 +281,25 @@
       baseline: "middle"
     });
 
-    drawTextWithStroke(String(avg), cx, cy*0.71, {
+    drawTextWithStroke("総合評価", cx, cy*0.55, {
+      font: `bold 14px "Arial Black", Arial`,
+      fill: BLACK,
+      stroke: WHITE,
+      strokeWidth: Math.max(2, Math.round(bigFontSize * 0.06)),
+      align: "center",
+      baseline: "middle"
+    });
+
+    drawTextWithStroke("TOTAL", cx, cy*0.61, {
+      font: `bold 15px "Arial Black", Arial`,
+      fill: BLACK,
+      stroke: WHITE,
+      strokeWidth: Math.max(2, Math.round(bigFontSize * 0.06)),
+      align: "center",
+      baseline: "middle"
+    });
+
+    drawTextWithStroke(String(avg), cx, cy*0.7, {
       font: `bold ${bigFontSize}px "Digital-7", Arial`,
       fill: BLACK,
       stroke: WHITE,
@@ -188,8 +309,8 @@
     });
 
     const grade = getGrade(avg);
-    drawTextWithStroke(String(grade), cx, cy*0.91, {
-      font: `bold ${bigFontSize*1.7}px "Arial Black", Arial`,
+    drawTextWithStroke(String(grade), cx, cy*0.9, {
+      font: `bold ${bigFontSize*1.9}px "Arial Black", Arial`,
       fill: BLACK,
       stroke: WHITE,
       strokeWidth: Math.max(2, Math.round(bigFontSize * 0.06)),
